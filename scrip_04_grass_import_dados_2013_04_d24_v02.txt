@@ -1,0 +1,118 @@
+#import
+
+cd "D:\_data\john\karen_topo\rasters_2013_04_d29"
+r.in.gdal input=map_karen_2013_04_d24.img output=map_karen_2013_04_d24_img
+r.in.gdal input=fl_euca_bin.img output=fl_euca_bin_img
+r.in.gdal input=fl_euca_eucdist.img output=fl_euca_eucdist_img
+r.in.gdal input=fl_euca_varzea_bin.img output=fl_euca_varzea_bin_img
+r.in.gdal input=fl_euca_varzea_eucdist.img output=fl_euca_varzea_eucdist_mg
+r.in.gdal input=fl_nativa_bin.img output=fl_nativa_bin_img
+r.in.gdal input=fl_nativa_eucdist.img output=fl_nativa_eucdist_img
+r.in.gdal input=urba_bin.img output=urba_bin_img
+r.in.gdal input=urba_eucdist.img output=urba_eucdist_img
+r.in.gdal input=agua_bin2.img output=agua_bin_img
+r.in.gdal input=lombadas_2013_eucdist.img output=lombadas_2013_eucdist_img
+v.in.ogr dsn=pontos_grupos.shp output=pontos_grupo_v02_shp -c -o --o
+
+g.region rast=map_karen_2013_04_d24_img
+
+# recolorir
+cd "D:\_data\john\karen_topo"
+r.in.gdal input=map_karen_2013_04_d24.img output=map_karen_2013_04_d24_img
+
+r.category map=map_karen_2013_04_d24_img rules=-<<EOF
+0:null
+1:Urbano
+2:Eucalipto_sub
+3:Agua
+4:Campo_antropico
+5:Const_rural
+6:Eucalipto
+7:Arboreo
+8:Mata_ciliar
+9:Eucalipto_antig
+10:Florestal
+11:Varzea
+12:Solo_exp
+13:Cerca_viva
+14:Cultura
+15:Pasto
+16:Arbustivo
+17:Cana
+18:Mata_urbana
+19:Estrada
+EOF
+
+
+r.stats -la map_karen_2013_04_d24_img
+
+r.colors map=map_karen_2013_04_d24_img color=rules <<EOF
+0 240:240:240
+1 197:0:255
+2 255:255:115
+3 0:112:255
+4 211:255:190
+5 159:93:245
+6 255:255:115
+7 56:198:0
+8 38:115:0
+9 230:230:0
+10 76:115:0
+11 168:112:0
+12 255:255:127
+13 115:76:0
+14 230:76:0
+15 178:178:178
+16 85:255:0
+17 255:190:190
+18 0:168:132
+19 0:0:0
+EOF
+
+r.colors map=fl_euca_bin_img color=random
+r.colors map=fl_euca_varzea_bin_img color=random
+r.colors map=fl_nativa_bin_img color=random
+r.colors map=urba_bin_img color=random
+r.colors map=agua_bin_img color=random
+
+#transformar de inteiro pra float
+r.mapcalc "fl_euca_bin_img_float=1.0*fl_euca_bin_img"
+r.mapcalc "fl_euca_varzea_bin_img_float_float=1.0*fl_euca_varzea_bin_img"
+r.mapcalc "fl_nativa_bin_img_float=1.0*fl_nativa_bin_img"
+r.mapcalc "urba_bin_img_floar=1.0*urba_bin_img"
+r.mapcalc "agua_bin_img_float=1.0*agua_bin_img"
+#proporção
+# baixa=100mts
+
+r.neighbors -c input=fl_euca_bin_img_float output=fl_euca_bin_img_neig_41px method=average size=41 --o
+r.neighbors -c input=fl_euca_varzea_bin_img_float_float output=fl_euca_varzea_bin_img_neig_41px method=average size=41 --o
+r.neighbors -c input=fl_nativa_bin_img_float output=fl_nativa_bin_img_41px method=average size=41 --o
+r.neighbors -c input=urba_bin_img_floar output=urba_bin_img_41px method=average size=41 --o
+r.neighbors -c input=agua_bin_img_float output=agua_bin_img_41px method=average size=41 --o
+#alta=200mts
+r.neighbors -c input=fl_euca_bin_img_float output=fl_euca_bin_img_neig_81px method=average size=81 --o
+r.neighbors -c input=fl_euca_varzea_bin_img_float_float output=fl_euca_varzea_bin_img_neig_81px method=average size=81 --o
+r.neighbors -c input=fl_nativa_bin_img_float output=fl_nativa_bin_img_81px method=average size=81 --o
+r.neighbors -c input=urba_bin_img_floar output=urba_bin_img_81px method=average size=81 --o
+r.neighbors -c input=agua_bin_img_float output=agua_bin_img_81px method=average size=81 --o
+
+#add coluna
+v.db.addcol map=pontos_grupo_v02_shp columns="distlomb DOUBLE PRECISION" 
+
+
+v.what.rast vector=pontos_grupo_v02_shp raster=fl_euca_bin_img_neig_41px column="fleuca_41" --o
+v.what.rast vector=pontos_grupo_v02_shp raster=fl_euca_varzea_bin_img_neig_41px column="fleuvar_41"
+v.what.rast vector=pontos_grupo_v02_shp raster=fl_nativa_bin_img_41px column="fl_41px" --o
+v.what.rast vector=pontos_grupo_v02_shp raster=urba_bin_img_41px column="urb_41"
+v.what.rast vector=pontos_grupo_v02_shp raster=agua_bin_img_41px column="agua_41"
+
+
+v.what.rast vector=pontos_grupo_v02_shp raster=fl_euca_bin_img_neig_81px column="fleuca_81" --o
+v.what.rast vector=pontos_grupo_v02_shp raster=fl_euca_varzea_bin_img_neig_81px column="fleuvar_81"
+v.what.rast vector=pontos_grupo_v02_shp raster=fl_nativa_bin_img_81px column="fl_81px" --o
+v.what.rast vector=pontos_grupo_v02_shp raster=urba_bin_img_81px column="urb_81"
+v.what.rast vector=pontos_grupo_v02_shp raster=agua_bin_img_81px column="agua_81"
+
+v.what.rast vector=pontos_grupo_v02_shp raster=lombadas_2013_eucdist_img column="distlomb"
+
+v.out.ogr input=pontos_grupo_v02_shp dsn=pontos_grupo_whatv03.shp type=point

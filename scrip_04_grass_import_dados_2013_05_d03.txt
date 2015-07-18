@@ -1,0 +1,67 @@
+
+cd "D:\_data\john\karen_topo\rasters_2013_05_d03"
+r.in.gdal input=agua_varz_bin.img output=agua_varz_bin_2013_05_d03_img -o --o
+r.in.gdal input=const_urb.img output=const_urb_2013_05_d03_img -o --o
+r.in.gdal input=cult_cana_bin.img output=cult_cana_bin_2013_05_d03_img -o --o
+r.in.gdal input=euc_bin.img output=euc_bin_2013_05_d03_img -o --o
+r.in.gdal input=fl_bin.img output=fl_bin_2013_05_d03_img -o --o
+r.in.gdal input=solo_pas_camp_bin.img output=solo_pas_camp_bin_2013_05_d03_img -o --o
+r.in.gdal input=lombadas_eucdist.img output=lombadas_eucdist_2013_05_d03_img -o --o
+
+#
+cd "D:\_data\john\karen_topo"
+v.in.ogr dsn=pontos_grupos_2013_05_d03.shp output=pontos_grupos_2013_05_d03_shp -c --o -o
+g.region rast=map_karen_2013_04_d24_img
+
+r.mapcalc "agua_varz_bin_2013_05_d03_img=1.0*agua_varz_bin_2013_05_d03_img"
+r.mapcalc "const_urb_2013_05_d03_img=1.0*const_urb_2013_05_d03_img"
+r.mapcalc "cult_cana_bin_2013_05_d03_img=1.0*cult_cana_bin_2013_05_d03_img"
+r.mapcalc "euc_bin_2013_05_d03_img=1.0*euc_bin_2013_05_d03_img"
+r.mapcalc "fl_bin_2013_05_d03_img=1.0*fl_bin_2013_05_d03_img"
+r.mapcalc "solo_pas_camp_bin_2013_05_d03_img=1.0*solo_pas_camp_bin_2013_05_d03_img"
+
+# baixa=100mts
+r.neighbors -c input=agua_varz_bin_2013_05_d03_img output=agua_varz_bin_2013_05_d03_img_41px method=average size=41 --o
+r.neighbors -c input=const_urb_2013_05_d03_img output=const_urb_2013_05_d03_img_41px method=average size=41 --o
+r.neighbors -c input=cult_cana_bin_2013_05_d03_img output=cult_cana_bin_2013_05_d03_img_41px method=average size=41 --o
+r.neighbors -c input=euc_bin_2013_05_d03_img output=euc_bin_2013_05_d03_img_41px method=average size=41 --o
+r.neighbors -c input=fl_bin_2013_05_d03_img output=fl_bin_2013_05_d03_img_41px method=average size=41 --o
+r.neighbors -c input=solo_pas_camp_bin_2013_05_d03_img output=solo_pas_camp_bin_2013_05_d03_img_41px method=average size=41 --o
+
+# alta=200
+r.neighbors -c input=agua_varz_bin_2013_05_d03_img output=agua_varz_bin_2013_05_d03_img_81px method=average size=81 --o
+r.neighbors -c input=const_urb_2013_05_d03_img output=const_urb_2013_05_d03_img_81px method=average size=81 --o
+r.neighbors -c input=cult_cana_bin_2013_05_d03_img output=cult_cana_bin_2013_05_d03_img_81px method=average size=81 --o
+
+
+r.neighbors -c input=euc_bin_2013_05_d03_img output=euc_bin_2013_05_d03_img_81px method=average size=81 --o
+r.neighbors -c input=fl_bin_2013_05_d03_img output=fl_bin_2013_05_d03_img_81px method=average size=81 --o
+r.neighbors -c input=solo_pas_camp_bin_2013_05_d03_img output=solo_pas_camp_bin_2013_05_d03_img_81px method=average size=81 --o
+
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=agua_varz_bin_2013_05_d03_img_41px column="ag_var_41"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=const_urb_2013_05_d03_img_41px column="con_urb_41"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=cult_cana_bin_2013_05_d03_img_41px column="cul_can_41"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=euc_bin_2013_05_d03_img_41px column="euc_41"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=fl_bin_2013_05_d03_img_41px column="fl_41"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=solo_pas_camp_bin_2013_05_d03_img_41px column="sol_pas_41"
+
+
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=agua_varz_bin_2013_05_d03_img_81px column="ag_var_81"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=const_urb_2013_05_d03_img_81px column="con_urb_81"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=cult_cana_bin_2013_05_d03_img_81px column="cul_can_81"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=euc_bin_2013_05_d03_img_81px column="euc_81"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=fl_bin_2013_05_d03_img_81px column="fl_81"
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=solo_pas_camp_bin_2013_05_d03_img_81px column="sol_pas_81"
+
+v.what.rast vector=pontos_grupos_2013_05_d03_shp raster=lombadas_eucdist_2013_05_d03_img column="dist_lomb"
+
+v.out.ogr input=pontos_grupos_2013_05_d03_shp dsn=pontos_grupos_2013_05_d03_what_v06.shp type=point
+
+
+ cd "D:\_data\john\karen_topo"
+
+
+
+
+
+ 

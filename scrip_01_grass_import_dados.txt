@@ -1,0 +1,64 @@
+cd "C:\Data\Karen\mapeamento_saocarlos_karen_2012_03_d17"
+
+v.in.ogr -o --o dsn=map_karen.shp output=mapeamento_saocarlos_karen_2012_03_d17
+g.remove -f vect=mapeamento_saocarlos_karen_2012_03_d17
+
+
+r.in.gdal -o --o input=map_karen_img.img output=map_karen_img
+
+g.region rast=map_karen_img
+
+r.category map=map_karen_img rules=-<<EOF
+1:Urbano
+2:Eucalipto_sub
+3:Agua
+4:Campo_antropico
+5:Const_rural
+6:Eucalipto
+7:Arboreo
+8:Mata_ciliar
+9:Eucalipto_antig
+10:Florestal
+11:Varzea
+12:Solo_exp
+13:Cerca_viva
+14:Cultura
+15:Pasto
+16:Arbustivo
+17:Cana
+18:Mata_urbana
+19:Estrada
+EOF
+
+
+r.stats -la map_karen_img
+
+r.colors map=map_karen_img color=rules <<EOF
+1 197:0:255
+2 255:255:115
+3 0:112:255
+4 211:255:190
+5 159:93:245
+6 255:255:115
+7 56:198:0
+8 38:115:0
+9 230:230:0
+10 76:115:0
+11 168:112:0
+12 255:255:127
+13 115:76:0
+14 230:76:0
+15 178:178:178
+16 85:255:0
+17 255:190:190
+18 0:168:132
+19 0:0:0
+EOF
+
+
+
+
+
+cd "C:\Data\Karen"
+v.in.ogr -o --o dsn=pontos_utm23_Buffer_1m.shp output=pontos_utm23_Buffer_1m        -c
+

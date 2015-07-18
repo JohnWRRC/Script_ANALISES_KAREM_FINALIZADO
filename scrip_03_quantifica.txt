@@ -1,0 +1,53 @@
+setwd("C:\\Data\\Karen\\stats")
+
+arquivo.list<-dir(path=".",pattern=".txt")
+arquivo.list<-arquivo.list[-grep("040", arquivo.list)]
+arquivo.list<-arquivo.list[-grep("041", arquivo.list)]
+arquivo.list<-arquivo.list[-grep("100", arquivo.list)]
+arquivo.list<-arquivo.list[-grep("105", arquivo.list)]
+
+
+
+dados.all<-NULL
+for (arquivo in arquivo.list)
+	{
+
+	dados.aux<-read.table(arquivo, sep="\t", head=F)
+	dados.aux<-subset(dados.aux, V2!="no data")
+	dados.aux$PONTO<-substr(arquivo,10,12)
+	dados.aux$ESCAL<-substr(arquivo,22,26)
+
+	colnames(dados.aux)<-c("codclass","dsc_classe","aream2","PONTO","ESCAL")
+
+	dados.aux$areaha<-dados.aux$aream2/10000
+	dados.aux$ESCAL_PONTO<-paste("Esc_",dados.aux$ESCAL," PT_" ,dados.aux$PONTO, sep="")
+
+	dados.aux<-subset(dados.aux, select=c(ESCAL_PONTO,dsc_classe, areaha))
+
+	dados.all<-data.frame(rbind(dados.all, dados.aux))
+	}
+
+
+dados.all.wide<- reshape(dados.all, v.names="areaha", idvar="ESCAL_PONTO",
+                timevar="dsc_classe", direction="wide")
+
+
+colnames(dados.all.wide)<-gsub("areaha.","", colnames(dados.all.wide))
+
+dados.all.wide[is.na(dados.all.wide)]<-0
+
+
+somaha<-rowSums(dados.all.wide[,2:ncol(dados.all.wide)])
+
+
+x<-round(dados.all.wide[,2:(ncol(dados.all.wide)-1)] / somaha*100,2)
+
+dados.all.wide[,2:(ncol(dados.all.wide)-1)]<-x
+
+
+dados.all.wide$arealand<-somaha
+
+dados.all.wide
+
+
+write.table(dados.all.wide, "..\\_Analise_Karen_stats_v01.txt", append=F, col.names=T, row.names=F, quote=F, sep="\t", dec=",")

@@ -1,0 +1,92 @@
+rgui&
+
+require(spgrass6)
+setwd("C:\\Data\\Karen")
+
+require(foreign)
+
+PONTOS_V01.list<-read.dbf("pontos_utm23.dbf")
+
+PONTOS_V01.list<-as.character(PONTOS_V01.list$N_AMOSTRA)
+
+
+PONTOS_V01.list
+
+
+
+PONTOS_V01.list<-PONTOS_V01.list
+
+for (PONTO in PONTOS_V01.list)
+	{
+
+
+	comando<-paste("v.extract.exe input=pontos_utm23_Buffer_1m output=PONTO_AUX",PONTO, " type=area where=","\"", "(N_AMOSTRA='", PONTO, "')","\"", sep="")
+	cat(comando,"\n")
+	system(comando)
+
+	comando<-paste("g.region.exe vect=PONTO_AUX",PONTO, sep="")
+	cat(comando,"\n")
+	system(comando)
+
+	north<-gmeta6()$n+2500
+	south<-gmeta6()$s-2500
+	west <-gmeta6()$w-2500
+	east <-gmeta6()$e+2500
+
+	comando<-paste("g.region.exe n=",north," s=",south," w=",west," e=",east, sep="")
+	cat(comando,"\n")
+	system(comando)
+
+
+	buffer_list<-c(100, 150, 200, 500, 1000, 1500, 2000)
+
+	for (mybuff in buffer_list)
+
+		{
+
+		mybuff.txt<-as.character(mybuff)
+		mybuff.txt<-ifelse(mybuff<1000,paste("0",mybuff,sep=""),mybuff.txt)
+
+		comando<-paste("v.to.rast.exe --o input=PONTO_AUX",PONTO, " output=PONTO_AUX",PONTO,"_rast use=val value=1", sep="")
+		cat(comando,"\n")
+		system(comando)
+
+
+		comando<-paste("r.buffer.exe --o input=PONTO_AUX",PONTO, "_rast output=PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m distances=",mybuff,"\"", sep="")
+		cat(comando,"\n")
+		system(comando)
+
+
+		comando<-paste("r.mapcalc.exe ","\"","PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso=if(PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m>0,map_karen_img,null())","\"",sep="")
+		cat(comando,"\n")
+		system(comando)
+
+
+		comando<-paste("r.colors.exe PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso rast=map_karen_img",sep="")
+		cat(comando,"\n")
+		system(comando)
+		
+
+		comando<-paste("r.category.exe PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso rast=map_karen_img",sep="")
+		cat(comando,"\n")
+		system(comando)
+
+		comando<-paste("r.out.gdal.exe input=PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso output=.\\grids\\PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso_img.img forma=HFA",sep="")
+		cat(comando,"\n")
+		system(comando)
+
+
+		comando<-paste("r.stats.exe -la input=PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso output=.\\stats\\PONTO_AUX",PONTO,"_rast_buf",mybuff.txt,"m_uso_stats.txt fs=tab",sep="")
+		cat(comando,"\n")
+		system(comando)
+
+		}
+
+	}
+
+
+
+
+comando<-paste("g.region.exe rast=map_karen_img")
+cat(comando,"\n")
+system(comando)
